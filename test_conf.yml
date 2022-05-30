@@ -1,0 +1,31 @@
+---
+- hosts: sw1
+- name: Configure TACACS/AAA
+- tasks
+    - name: Configure TACACS
+    - include_vars: vars.yml      
+      ios_config:
+      lines:
+          - "server-private {{ tac_server }} single-connection key {{ tac_key }}"
+          - "ip tacacs source-interface {{ mgmt_intf }}"
+      parents: "aaa group server tacacs+ {{ tac_group }}"
+      match: line
+
+    - name: Configure AAA Settings
+      ios_config:
+      lines:
+          - "aaa new-model"
+          - "aaa authentication login default group {{ tac_server_group }} local"
+          - "aaa authentication enable default group {{ tac_server_group }} enable"
+          - "aaa authorization config-commands"
+          - "aaa authorization exec default group {{ tac_server_group }} local if-authenticated"
+          - "aaa authorization commands 1 default group {{ tac_server_group }} local if-authenticated"
+          - "aaa authorization commands 15 default group {{ tac_server_group }} local if-authenticated"
+          - "aaa accounting exec default start-stop group {{ tac_server_group }}"
+          - "aaa accounting commands 1 default start-stop group {{ tac_server_group }}"
+          - "aaa accounting commands 15 default start-stop group {{ tac_server_group }}"
+      match: line
+ 
+    - name: Save configuration
+      ios_config:
+         save_when: modified
