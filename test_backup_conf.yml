@@ -1,0 +1,13 @@
+---
+- hosts: sw1
+  tasks:
+     - name: Export aaa/tacacs/radius conf
+       ios_command:
+       commands:
+         - show tacacs | int Server
+         - show run aaa
+
+     - name: save output to backups/ 
+       copy: 
+       content: "{{ config.stdout[0] }}"
+       dest: "backups/show_conf.txt"
